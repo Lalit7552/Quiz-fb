@@ -1,5 +1,5 @@
 const express = require("express");
-const User = require("../models/user");
+const User = require("../models/User");
 const Category = require("../models/Category");
 const Question = require("../models/Question");
 const Result = require("../models/Result");
