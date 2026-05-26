@@ -23,21 +23,33 @@ const AdminDashboard = () => {
         }),
       ]);
 
-      const safeLeaderboard = (leaderboardRes.data || [])
-        .filter(item => item && item.user && item.user.name) // 🔥 FULL SAFE
-        .sort((a, b) => (b.score || 0) - (a.score || 0))
+      // ✅ SAFE stats
+      const statsData = statsRes?.data?.data || statsRes?.data || {};
+
+      // ✅ SAFE leaderboard (handles all cases)
+      const rawLeaderboard =
+        Array.isArray(leaderboardRes?.data)
+          ? leaderboardRes.data
+          : leaderboardRes?.data?.data || [];
+
+      const safeLeaderboard = rawLeaderboard
+        .filter(item => item && item?.user?.name)
+        .sort((a, b) => (b?.score || 0) - (a?.score || 0))
         .slice(0, 10);
 
-      setStats(statsRes.data || {});
+      setStats(statsData);
       setLeaderboard(safeLeaderboard);
-      setLoading(false);
     } catch (err) {
       console.error("Dashboard Error:", err);
+      setStats({});
+      setLeaderboard([]);
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("API URL:", API); // 🔍 debug
     fetchDashboardData();
   }, []);
 
@@ -45,7 +57,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-purple-100 p-8">
-
       <h1 className="text-3xl font-bold mb-8">Admin Dashboard</h1>
 
       {/* Stats */}
@@ -60,7 +71,7 @@ const AdminDashboard = () => {
       <div className="bg-white p-5 rounded-xl shadow">
         <h2 className="text-xl font-bold mb-4">🏆 Leaderboard</h2>
 
-        {leaderboard.length === 0 ? (
+        {!Array.isArray(leaderboard) || leaderboard.length === 0 ? (
           <p>No data</p>
         ) : (
           leaderboard.map((item, i) => {
@@ -69,7 +80,7 @@ const AdminDashboard = () => {
 
             return (
               <div
-                key={item._id}
+                key={item?._id || i}
                 className="flex justify-between p-3 border-b"
               >
                 <div className="flex gap-3 items-center">
@@ -82,7 +93,7 @@ const AdminDashboard = () => {
                   <span>{name}</span>
                 </div>
 
-                <span>{item.score || 0}</span>
+                <span>{item?.score || 0}</span>
               </div>
             );
           })
